@@ -72,6 +72,14 @@ static inline void AFSaveManagedObjectContextOrThrowInternalConsistencyException
     }
 }
 
+NSManagedObjectContextConcurrencyType CoreDataQueueType(){
+    if(floor(NSFoundationVersionNumber) >= 1134.10){    // NSFoundationVersionNumber_iOS_8_0
+        return NSPrivateQueueConcurrencyType;
+    }else{
+        return NSMainQueueConcurrencyType;
+    }
+}
+
 @interface NSManagedObject (_AFIncrementalStore)
 @property (readwrite, nonatomic, copy, setter = af_setResourceIdentifier:) NSString *af_resourceIdentifier;
 @end
@@ -829,7 +837,7 @@ withAttributeAndRelationshipValuesFromManagedObject:(NSManagedObject *)managedOb
         NSURLRequest *request = [self.HTTPClient requestWithMethod:@"GET" pathForRelationship:relationship forObjectWithID:objectID withContext:context];
         
         if ([request URL] && ![[context existingObjectWithID:objectID error:nil] hasChanges]) {
-            NSManagedObjectContext *childContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+            NSManagedObjectContext *childContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:CoreDataQueueType()];
             childContext.parentContext = context;
             childContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy;
 
